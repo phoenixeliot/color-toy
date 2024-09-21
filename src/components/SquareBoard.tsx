@@ -1,5 +1,6 @@
 import { transpose, zip } from "ramda";
-import type { RgbColor } from "../types";
+import type { CSSProperties } from "react";
+import { rgbToHex, type Position, type RgbColor } from "../utils/color";
 
 type Props = {
   numRows: number;
@@ -7,6 +8,7 @@ type Props = {
   width: number;
   height: number;
   // referenceColorPositions: ColorPosition[];
+  onChangeReferenceColor: (pos: Position, color: string) => unknown;
   referenceColorPositions: {
     topLeft: RgbColor;
     topRight: RgbColor;
@@ -21,6 +23,7 @@ export default function SquareBoard({
   width: boardWidth,
   height: boardHeight,
   referenceColorPositions,
+  onChangeReferenceColor,
 }: Props) {
   const rowWidth = boardWidth / numCols;
   const rowHeight = boardHeight / numRows;
@@ -34,10 +37,11 @@ export default function SquareBoard({
     referenceColorPositions.bottomRight,
     numCols
   );
-  const gridColors = zip(topRowColors, bottomRowColors).map(([a, b]) =>
-    interpolateLine(a, b, numRows)
+  const gridColors = transpose(
+    zip(topRowColors, bottomRowColors).map(([a, b]) =>
+      interpolateLine(a, b, numRows)
+    )
   );
-  console.log(gridColors);
   return (
     <div
       style={{
@@ -59,18 +63,34 @@ export default function SquareBoard({
             const cellHeight = endY - startY;
             const extraPaddingForSeams = 1;
 
+            const style: CSSProperties = {
+              backgroundColor: `rgb(${color.join(",")})`,
+              position: "absolute",
+              width: cellWidth + extraPaddingForSeams,
+              height: cellHeight + extraPaddingForSeams,
+              left: rowWidth * c - extraPaddingForSeams / 2,
+              top: rowHeight * r - extraPaddingForSeams / 2,
+            };
+
+            if (
+              (r === 0 || r === numRows - 1) &&
+              (c === 0 || c === numCols - 1)
+            ) {
+              return (
+                <label key={c} style={style}>
+                  <input
+                    style={{ opacity: 0 }}
+                    value={rgbToHex(color)}
+                    type="color"
+                    onChange={(e) =>
+                      onChangeReferenceColor({ x: c, y: r }, e.target.value)
+                    }
+                  />
+                </label>
+              );
+            }
             return (
-              <div
-                key={c}
-                style={{
-                  backgroundColor: `rgb(${color.join(",")})`,
-                  position: "absolute",
-                  width: cellWidth + extraPaddingForSeams,
-                  height: cellHeight + extraPaddingForSeams,
-                  left: rowWidth * c - extraPaddingForSeams / 2,
-                  top: rowHeight * r - extraPaddingForSeams / 2,
-                }}
-              >
+              <div key={c} style={style}>
                 {/* {r}, {c}
                 <br />
                 {color.join(",")} */}

@@ -1,7 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import "./App.css";
 import SquareBoard from "./components/SquareBoard";
-import type { RgbColor } from "./types";
+import { type RgbColor, hexToRgb } from "./utils/color";
 
 function App() {
   const [colors, setColors] = useState<
@@ -13,43 +13,46 @@ function App() {
     bottomRight: [0, 209, 215], // 00d1d7
   });
 
+  function setColor(positionName: string, hexColor: string) {
+    console.log(`Updating color for ${positionName}`);
+    setColors({
+      ...colors,
+      [positionName]: hexToRgb(hexColor),
+    });
+  }
+
   const handleColorChange =
     (position: string) => (e: ChangeEvent<HTMLInputElement>) => {
       const hexColor = e.target.value;
-      setColors({
-        ...colors,
-        [position]: hexToRgb(hexColor),
-      });
+      setColor(position, hexColor);
     };
 
   return (
     <>
-      <input
-        type="color"
-        value={rgbToHex(colors["topLeft"])}
-        onChange={handleColorChange("topLeft")}
-      />
-      <input
-        type="color"
-        value={rgbToHex(colors["topRight"])}
-        onChange={handleColorChange("topRight")}
-      />
-      <input
-        type="color"
-        value={rgbToHex(colors["bottomLeft"])}
-        onChange={handleColorChange("bottomLeft")}
-      />
-      <input
-        type="color"
-        value={rgbToHex(colors["bottomRight"])}
-        onChange={handleColorChange("bottomRight")}
-      />
-
       <SquareBoard
         numRows={5}
         numCols={5}
         width={500}
         height={500}
+        onChangeReferenceColor={(pos, color) => {
+          console.log(`Changing color for position, ${JSON.stringify(pos)}`);
+          switch (pos.x) {
+            case 0:
+              switch (pos.y) {
+                case 0:
+                  return setColor("topLeft", color);
+                default:
+                  return setColor("bottomLeft", color);
+              }
+            default:
+              switch (pos.y) {
+                case 0:
+                  return setColor("topRight", color);
+                default:
+                  return setColor("bottomRight", color);
+              }
+          }
+        }}
         // referenceColorPositions={[
         //   { position: { x: 0, y: 0 }, color: [0, 0, 0] },
         //   { position: { x: 5, y: 0 }, color: [5, 0, 0] },
@@ -60,16 +63,6 @@ function App() {
       />
     </>
   );
-}
-
-function hexToRgb(hexColor: string) {
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
-  return [r, g, b];
-}
-function rgbToHex(rgbColor: RgbColor) {
-  return "#" + rgbColor.map((v: number) => v.toString(16)).join("");
 }
 
 export default App;

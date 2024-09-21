@@ -91,9 +91,9 @@ export default function SquareBoard({
             }
             return (
               <div key={c} style={style}>
-                {/* {r}, {c}
-                <br />
-                {color.join(",")} */}
+                {/* {r}, {c} */}
+                {/* <br /> */}
+                {/* {color.join(",")} */}
               </div>
             );
           })}

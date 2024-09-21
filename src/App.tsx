@@ -1,9 +1,11 @@
 import { useState, type ChangeEvent } from "react";
 import "./App.css";
 import SquareBoard from "./components/SquareBoard";
-import { type RgbColor, hexToRgb } from "./utils/color";
+import { hexToRgb, type RgbColor } from "./utils/color";
+import { useWindowSize } from "./utils/useWindowSize";
 
 function App() {
+  const windowSize = useWindowSize();
   const [colors, setColors] = useState<
     Record<"topLeft" | "topRight" | "bottomLeft" | "bottomRight", RgbColor>
   >({
@@ -61,8 +63,8 @@ function App() {
       <SquareBoard
         numRows={5}
         numCols={5}
-        width={500}
-        height={500}
+        width={Math.min((windowSize.width || Infinity) - 80, 500)}
+        height={Math.min((windowSize.height || Infinity) - 100, 500)}
         onChangeReferenceColor={(pos, color) => {
           console.log(`Changing color for position, ${JSON.stringify(pos)}`);
           switch (pos.x) {
@@ -82,12 +84,6 @@ function App() {
               }
           }
         }}
-        // referenceColorPositions={[
-        //   { position: { x: 0, y: 0 }, color: [0, 0, 0] },
-        //   { position: { x: 5, y: 0 }, color: [5, 0, 0] },
-        //   { position: { x: 0, y: 5 }, color: [0, 5, 0] },
-        //   { position: { x: 5, y: 5 }, color: [5, 5, 5] },
-        // ]}
         referenceColorPositions={colors}
       />
     </>

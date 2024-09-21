@@ -6,11 +6,17 @@ export type ColorPosition = {
 };
 
 export function hexToRgb(hexColor: string) {
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
-  return [r, g, b] as RgbColor;
+  return hexColor
+    .replace(
+      /^#?([a-f\d])([a-f\d])([a-f\d])$/i,
+      (m, r, g, b) => "#" + r + r + g + g + b + b
+    )
+    .substring(1)
+    .match(/.{2}/g)
+    ?.map((x) => parseInt(x, 16)) as RgbColor;
 }
 export function rgbToHex(rgbColor: RgbColor) {
-  return "#" + rgbColor.map((v: number) => v.toString(16)).join("");
+  return (
+    "#" + rgbColor.map((v: number) => v.toString(16).padStart(2, "0")).join("")
+  );
 }

@@ -17,6 +17,9 @@ export function hexToRgb(hexColor: string) {
 }
 export function rgbToHex(rgbColor: RgbColor) {
   return (
-    "#" + rgbColor.map((v: number) => v.toString(16).padStart(2, "0")).join("")
+    "#" +
+    rgbColor
+      .map((v: number) => Math.floor(v).toString(16).padStart(2, "0"))
+      .join("")
   );
 }

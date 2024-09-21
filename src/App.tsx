@@ -6,6 +6,8 @@ import { useWindowSize } from "./utils/useWindowSize";
 
 function App() {
   const windowSize = useWindowSize();
+  const [numRows, setNumRows] = useState(5);
+  const [numCols, setNumCols] = useState(5);
   const [colors, setColors] = useState<
     Record<"topLeft" | "topRight" | "bottomLeft" | "bottomRight", RgbColor>
   >({
@@ -23,15 +25,29 @@ function App() {
     });
   }
 
-  const handleColorChange =
-    (position: string) => (e: ChangeEvent<HTMLInputElement>) => {
-      const hexColor = e.target.value;
-      setColor(position, hexColor);
-    };
-
   return (
     <>
       <div>(Click the corners to change their color)</div>
+      <label>
+        Rows:
+        <input
+          type="number"
+          min={2}
+          max={80}
+          value={numRows}
+          onChange={(e) => setNumRows(Number(e.target.value))}
+        />
+      </label>
+      <label>
+        Columns:
+        <input
+          type="number"
+          min={2}
+          max={80}
+          value={numCols}
+          onChange={(e) => setNumCols(Number(e.target.value))}
+        />
+      </label>
       <button
         onClick={() => {
           setColors({
@@ -61,8 +77,8 @@ function App() {
         Randomize colors
       </button>
       <SquareBoard
-        numRows={5}
-        numCols={5}
+        numRows={numRows}
+        numCols={numCols}
         width={Math.min((windowSize.width || Infinity) - 80, 500)}
         height={Math.min((windowSize.height || Infinity) - 100, 500)}
         onChangeReferenceColor={(pos, color) => {

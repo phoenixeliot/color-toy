@@ -78,8 +78,9 @@ export default function SquareBoard({
             ) {
               return (
                 <label key={c} style={style}>
+                  {/* {rgbToHex(color)} */}
                   <input
-                    style={{ opacity: 0 }}
+                    style={{ opacity: 0, width: 0, height: 0 }}
                     value={rgbToHex(color)}
                     type="color"
                     onChange={(e) =>

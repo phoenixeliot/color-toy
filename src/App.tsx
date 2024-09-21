@@ -7,7 +7,7 @@ function App() {
   const [colors, setColors] = useState<
     Record<"topLeft" | "topRight" | "bottomLeft" | "bottomRight", RgbColor>
   >({
-    topLeft: [183, 32, 16], // b72010
+    topLeft: hexToRgb("#e84340"),
     topRight: [78, 36, 118], // 4e2476
     bottomLeft: [255, 250, 94], // fffa5e
     bottomRight: [0, 209, 215], // 00d1d7
@@ -29,6 +29,35 @@ function App() {
 
   return (
     <>
+      <div>(Click the corners to change their color)</div>
+      <button
+        onClick={() => {
+          setColors({
+            topLeft: [
+              Math.random() * 255,
+              Math.random() * 255,
+              Math.random() * 255,
+            ],
+            topRight: [
+              Math.random() * 255,
+              Math.random() * 255,
+              Math.random() * 255,
+            ],
+            bottomLeft: [
+              Math.random() * 255,
+              Math.random() * 255,
+              Math.random() * 255,
+            ],
+            bottomRight: [
+              Math.random() * 255,
+              Math.random() * 255,
+              Math.random() * 255,
+            ],
+          });
+        }}
+      >
+        Randomize colors
+      </button>
       <SquareBoard
         numRows={5}
         numCols={5}

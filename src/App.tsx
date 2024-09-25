@@ -3,6 +3,8 @@ import "./App.css";
 import SquareBoard from "./components/SquareBoard";
 import { hexToRgb, type RgbColor } from "./utils/color";
 import { useWindowSize } from "./utils/useWindowSize";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 function App() {
   const windowSize = useWindowSize();
@@ -28,7 +30,7 @@ function App() {
   }
 
   return (
-    <>
+    <DndProvider backend={HTML5Backend}>
       <label>
         Rows:
         <input
@@ -86,16 +88,16 @@ function App() {
           // console.log(
           //   `Changing color for position, ${JSON.stringify(pos)}: ${color}`
           // );
-          switch (pos.x) {
+          switch (pos.c) {
             case 0:
-              switch (pos.y) {
+              switch (pos.r) {
                 case 0:
                   return setColor("topLeft", color);
                 default:
                   return setColor("bottomLeft", color);
               }
             default:
-              switch (pos.y) {
+              switch (pos.r) {
                 case 0:
                   return setColor("topRight", color);
                 default:
@@ -105,7 +107,7 @@ function App() {
         }}
         referenceColorPositions={colors}
       />
-    </>
+    </DndProvider>
   );
 }
 

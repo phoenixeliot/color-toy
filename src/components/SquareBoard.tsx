@@ -1,5 +1,6 @@
 import { transpose, zip } from "ramda";
 import { useCallback, useState, type CSSProperties } from "react";
+import { useDrag, useDrop } from "react-dnd";
 import { rgbToHex, type Position, type RgbColor } from "../utils/color";
 import "./SquareBoard.css";
 
@@ -86,12 +87,13 @@ export default function SquareBoard({
       </div>
       <div>
         {[0, numRows - 1].map((r) => (
-          <div style={{ display: "flex" }}>
+          <div style={{ display: "flex" }} key={r}>
             {[0, numCols - 1].map((c) => {
               const color = solvedGridColors[r][c];
               // return <div>{`${r},${c}`}</div>;
               return (
                 <div
+                  key={c}
                   style={{
                     display: "flex",
                     gap: "5px",
@@ -107,7 +109,7 @@ export default function SquareBoard({
                     }}
                     onClick={() =>
                       onChangeReferenceColor(
-                        { x: c, y: r },
+                        { c: c, r: r },
                         rgbToHex([
                           Math.floor(Math.random() * 256),
                           Math.floor(Math.random() * 256),
@@ -123,7 +125,7 @@ export default function SquareBoard({
                     value={rgbToHex(color)}
                     type="color"
                     onChange={(e) =>
-                      onChangeReferenceColor({ x: c, y: r }, e.target.value)
+                      onChangeReferenceColor({ c: c, r: r }, e.target.value)
                     }
                   />
                 </div>
@@ -144,48 +146,75 @@ export default function SquareBoard({
           <div key={r}>
             {[...Array(numCols)].map((_, c) => {
               const { goalR = 0, goalC = 0 } = positions[r]?.[c] || {};
-              const color = solvedGridColors[goalR][goalC] || [0, 0, 0];
-              const startX = Math.floor(rowWidth * c);
-              const startY = Math.floor(rowHeight * r);
-              const endX = Math.floor(rowWidth * (c + 1));
-              const endY = Math.floor(rowHeight * (r + 1));
-              const cellWidth = endX - startX;
-              const cellHeight = endY - startY;
-              const extraPaddingForSeams = 1;
+              const color = solvedGridColors[goalR]?.[goalC] || [0, 0, 0];
+              // const startX = Math.floor(rowWidth * c);
+              // const startY = Math.floor(rowHeight * r);
+              // const endX = Math.floor(rowWidth * (c + 1));
+              // const endY = Math.floor(rowHeight * (r + 1));
+              // const cellWidth = endX - startX;
+              // const cellHeight = endY - startY;
+              // const extraPaddingForSeams = 1;
 
-              const style: CSSProperties = {
-                backgroundColor: `rgb(${color.join(",")})`,
-                position: "absolute",
-                width: cellWidth + extraPaddingForSeams,
-                height: cellHeight + extraPaddingForSeams,
-                left: rowWidth * c - extraPaddingForSeams / 2,
-                top: rowHeight * r - extraPaddingForSeams / 2,
-              };
+              // const style: CSSProperties = {
+              //   backgroundColor: `rgb(${color.join(",")})`,
+              //   position: "absolute",
+              //   width: cellWidth + extraPaddingForSeams,
+              //   height: cellHeight + extraPaddingForSeams,
+              //   left: rowWidth * c - extraPaddingForSeams / 2,
+              //   top: rowHeight * r - extraPaddingForSeams / 2,
+              // };
 
-              if (
-                (r === 0 || r === numRows - 1) &&
-                (c === 0 || c === numCols - 1)
-              ) {
-                return (
-                  <label key={c} style={style}>
-                    {/* {rgbToHex(color)} */}
-                    <input
-                      style={{ opacity: 0, width: 0, height: 0 }}
-                      value={rgbToHex(color)}
-                      type="color"
-                      onChange={(e) =>
-                        onChangeReferenceColor({ x: c, y: r }, e.target.value)
-                      }
-                    />
-                  </label>
-                );
-              }
+              // if (
+              //   (r === 0 || r === numRows - 1) &&
+              //   (c === 0 || c === numCols - 1)
+              // ) {
+              //   return (
+              //     <label key={c} style={style}>
+              //       {/* {rgbToHex(color)} */}
+              //       <input
+              //         style={{ opacity: 0, width: 0, height: 0 }}
+              //         value={rgbToHex(color)}
+              //         type="color"
+              //         onChange={(e) =>
+              //           onChangeReferenceColor({ x: c, y: r }, e.target.value)
+              //         }
+              //       />
+              //     </label>
+              //   );
+              // }
               return (
-                <div key={c} style={style}>
-                  {/* {r}, {c} */}
-                  {/* <br /> */}
-                  {/* {color.join(",")} */}
-                </div>
+                <GridCell
+                  key={c}
+                  r={r}
+                  c={c}
+                  rowHeight={rowHeight}
+                  rowWidth={rowWidth}
+                  color={color}
+                  onSwap={(oldPos: Position, newPos: Position) => {
+                    setPositions((positions) => {
+                      // replace items in two rows; the old row and the new row
+                      const result = positions.map((row, r) =>
+                        r === oldPos.r || r === newPos.r // At least one item needs swapping in this row, maybe two
+                          ? row.map((col, c) =>
+                              // Swap if either of the positions matches
+                              r === oldPos.r && c === oldPos.c
+                                ? positions[newPos.r][newPos.c]
+                                : r == newPos.r && c === newPos.c
+                                  ? positions[oldPos.r][oldPos.c]
+                                  : col
+                            )
+                          : row
+                      );
+                      console.log(result);
+                      return result;
+                    });
+                  }}
+                />
+                // <div key={c} style={style}>
+                //   {/* {r}, {c} */}
+                //   {/* <br /> */}
+                //   {/* {color.join(",")} */}
+                // </div>
               );
             })}
           </div>
@@ -193,6 +222,99 @@ export default function SquareBoard({
       </div>
     </div>
   );
+}
+
+enum ItemTypes {
+  GRID_CELL = "GRID_CELL",
+}
+
+interface DropResult {
+  r: number;
+  c: number;
+}
+
+function GridCell({
+  r,
+  c,
+  rowWidth,
+  rowHeight,
+  color,
+  onSwap,
+}: {
+  r: number;
+  c: number;
+  rowWidth: number;
+  rowHeight: number;
+  color: RgbColor;
+  onSwap: (
+    oldPos: { r: number; c: number },
+    newPos: { r: number; c: number }
+  ) => unknown;
+}) {
+  const [{ isDragging }, dragRef] = useDrag(() => ({
+    type: ItemTypes.GRID_CELL,
+    item: { r, c }, // Drag target item
+    end: (item, monitor) => {
+      const dropResult = monitor.getDropResult<DropResult>();
+      if (item && dropResult) {
+        onSwap(item, dropResult);
+        // alert(
+        //   `You dropped (${item.r},${item.c}) into (${dropResult.r},${dropResult.c})!`
+        // );
+      }
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+      handlerId: monitor.getHandlerId(),
+    }),
+  }));
+  const [{ canDrop, isOver }, dropRef] = useDrop(() => ({
+    accept: ItemTypes.GRID_CELL,
+    drop: () => ({ r, c }), // returns drop target item
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+      canDrop: monitor.canDrop(),
+    }),
+  }));
+
+  const startX = Math.floor(rowWidth * c);
+  const startY = Math.floor(rowHeight * r);
+  const endX = Math.floor(rowWidth * (c + 1));
+  const endY = Math.floor(rowHeight * (r + 1));
+  const cellWidth = endX - startX;
+  const cellHeight = endY - startY;
+  const extraPaddingForSeams = 1;
+
+  const style: CSSProperties = {
+    backgroundColor: `rgb(${color.join(",")})`,
+    position: "absolute",
+    width: cellWidth + extraPaddingForSeams,
+    height: cellHeight + extraPaddingForSeams,
+    left: rowWidth * c - extraPaddingForSeams / 2,
+    top: rowHeight * r - extraPaddingForSeams / 2,
+  };
+  // const [{ opacity }, dragRef] = useDrag(
+  //   () => ({
+  //     type: ItemTypes.GRID_CELL,
+  //     // item: { text },
+  //     collect: (monitor) => ({
+  //       opacity: monitor.isDragging() ? 0.5 : 1,
+  //     }),
+  //   }),
+  //   []
+  // );
+  return (
+    <div ref={dropRef}>
+      <div style={style} ref={dragRef}>
+        {/* {isDragging ? "dragging!" : null} */}
+        {/* {r}, {c} */}
+        {/* {canDrop && isOver ? "Drop here!" : ""} */}
+        {/* <br /> */}
+        {/* {color.join(",")} */}
+      </div>
+    </div>
+  );
+  // <div ref={dragRef} style={{ opacity }}></div>;
 }
 
 function unshuffleGrid(solvedGridColors: RgbColor[][], numCols: number) {

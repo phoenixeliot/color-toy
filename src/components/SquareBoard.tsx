@@ -1,5 +1,5 @@
 import { transpose, zip } from "ramda";
-import { useState, type CSSProperties } from "react";
+import { useCallback, useState, type CSSProperties } from "react";
 import { rgbToHex, type Position, type RgbColor } from "../utils/color";
 import "./SquareBoard.css";
 
@@ -43,7 +43,9 @@ export default function SquareBoard({
       interpolateLine(a, b, numRows)
     )
   );
-  const [positions, setPositions] = useState(() => {
+
+  // Set the positions back to solved whenever we change grid size, and on mount
+  const resetPositions = useCallback(() => {
     const positions: MovableGridPosition[][] = [];
     solvedGridColors.forEach((row, r) => {
       positions[r] ??= [];
@@ -57,7 +59,12 @@ export default function SquareBoard({
       });
     });
     return positions;
-  });
+  }, [solvedGridColors]);
+  const [positions, setPositions] = useState(resetPositions);
+  if (numRows != positions.length || numCols != positions[0].length) {
+    setPositions(resetPositions);
+  }
+
   return (
     <div>
       <button
@@ -98,8 +105,8 @@ export default function SquareBoard({
         {[...Array(numRows)].map((_, r) => (
           <div key={r}>
             {[...Array(numCols)].map((_, c) => {
-              const { goalR, goalC } = positions[r][c];
-              const color = solvedGridColors[goalR][goalC];
+              const { goalR = 0, goalC = 0 } = positions[r]?.[c] || {};
+              const color = solvedGridColors[goalR][goalC] || [0, 0, 0];
               const startX = Math.floor(rowWidth * c);
               const startY = Math.floor(rowHeight * r);
               const endX = Math.floor(rowWidth * (c + 1));

@@ -1,5 +1,5 @@
 import { transpose, zip } from "ramda";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { rgbToHex, type Position, type RgbColor } from "../utils/color";
 
 type Props = {
@@ -37,69 +37,133 @@ export default function SquareBoard({
     referenceColorPositions.bottomRight,
     numCols
   );
-  const gridColors = transpose(
+  const solvedGridColors = transpose(
     zip(topRowColors, bottomRowColors).map(([a, b]) =>
       interpolateLine(a, b, numRows)
     )
   );
+  const [positions, setPositions] = useState(() => {
+    const positions: {
+      goalR: number;
+      goalC: number;
+      currentR: number;
+      currentC: number;
+      // color: RgbColor;
+    }[][] = [];
+    solvedGridColors.forEach((row, r) => {
+      positions[r] ??= [];
+      row.forEach((col, c) => {
+        positions[r][c] ??= {
+          currentR: r, // same as index in this object
+          currentC: c,
+          goalR: r, // stays the same even if we move items around
+          goalC: c,
+          // color: solvedGridColors[r][c],
+        };
+      });
+    });
+    return positions;
+  });
+  const unshuffleGrid = () => {
+    const posList = solvedGridColors.flat();
+    const unflattened: typeof positions = [];
+    posList.forEach((pos, flatIndex) => {
+      const newR = Math.floor(flatIndex / numCols);
+      const newC = flatIndex % numCols;
+      unflattened[newR] ??= [];
+      unflattened[newR][newC] = {
+        goalR: newR,
+        goalC: newC,
+        currentR: newR,
+        currentC: newC,
+      };
+    });
+    setPositions(unflattened);
+  };
+  const shuffleGrid = () => {
+    const posList = positions.flat();
+    const shuffled = [];
+    while (posList.length > 0) {
+      const index = Math.floor(Math.random() * posList.length);
+      shuffled.push(posList.splice(index, 1)[0]);
+    }
+    const unflattened: typeof positions = [];
+    shuffled.forEach((pos, flatIndex) => {
+      const newR = Math.floor(flatIndex / numCols);
+      const newC = flatIndex % numCols;
+      unflattened[newR] ??= [];
+      unflattened[newR][newC] = {
+        ...pos,
+        currentR: newR,
+        currentC: newC,
+      };
+    });
+    console.log(unflattened);
+    setPositions(unflattened);
+  };
   return (
-    <div
-      style={{
-        display: "flex",
-        position: "relative",
-        width: boardWidth,
-        height: boardHeight,
-      }}
-    >
-      {[...Array(numRows)].map((_, r) => (
-        <div key={r}>
-          {[...Array(numCols)].map((_, c) => {
-            const color = gridColors[r][c];
-            const startX = Math.floor(rowWidth * c);
-            const startY = Math.floor(rowHeight * r);
-            const endX = Math.floor(rowWidth * (c + 1));
-            const endY = Math.floor(rowHeight * (r + 1));
-            const cellWidth = endX - startX;
-            const cellHeight = endY - startY;
-            const extraPaddingForSeams = 1;
+    <div>
+      <button onClick={unshuffleGrid}>Unshuffle grid</button>
+      <button onClick={shuffleGrid}>Shuffle grid</button>
+      <div
+        style={{
+          display: "flex",
+          position: "relative",
+          width: boardWidth,
+          height: boardHeight,
+        }}
+      >
+        {[...Array(numRows)].map((_, r) => (
+          <div key={r}>
+            {[...Array(numCols)].map((_, c) => {
+              const { goalR, goalC } = positions[r][c];
+              const color = solvedGridColors[goalR][goalC];
+              const startX = Math.floor(rowWidth * c);
+              const startY = Math.floor(rowHeight * r);
+              const endX = Math.floor(rowWidth * (c + 1));
+              const endY = Math.floor(rowHeight * (r + 1));
+              const cellWidth = endX - startX;
+              const cellHeight = endY - startY;
+              const extraPaddingForSeams = 1;
 
-            const style: CSSProperties = {
-              backgroundColor: `rgb(${color.join(",")})`,
-              position: "absolute",
-              width: cellWidth + extraPaddingForSeams,
-              height: cellHeight + extraPaddingForSeams,
-              left: rowWidth * c - extraPaddingForSeams / 2,
-              top: rowHeight * r - extraPaddingForSeams / 2,
-            };
+              const style: CSSProperties = {
+                backgroundColor: `rgb(${color.join(",")})`,
+                position: "absolute",
+                width: cellWidth + extraPaddingForSeams,
+                height: cellHeight + extraPaddingForSeams,
+                left: rowWidth * c - extraPaddingForSeams / 2,
+                top: rowHeight * r - extraPaddingForSeams / 2,
+              };
 
-            if (
-              (r === 0 || r === numRows - 1) &&
-              (c === 0 || c === numCols - 1)
-            ) {
+              if (
+                (r === 0 || r === numRows - 1) &&
+                (c === 0 || c === numCols - 1)
+              ) {
+                return (
+                  <label key={c} style={style}>
+                    {/* {rgbToHex(color)} */}
+                    <input
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                      value={rgbToHex(color)}
+                      type="color"
+                      onChange={(e) =>
+                        onChangeReferenceColor({ x: c, y: r }, e.target.value)
+                      }
+                    />
+                  </label>
+                );
+              }
               return (
-                <label key={c} style={style}>
-                  {/* {rgbToHex(color)} */}
-                  <input
-                    style={{ opacity: 0, width: 0, height: 0 }}
-                    value={rgbToHex(color)}
-                    type="color"
-                    onChange={(e) =>
-                      onChangeReferenceColor({ x: c, y: r }, e.target.value)
-                    }
-                  />
-                </label>
+                <div key={c} style={style}>
+                  {/* {r}, {c} */}
+                  {/* <br /> */}
+                  {/* {color.join(",")} */}
+                </div>
               );
-            }
-            return (
-              <div key={c} style={style}>
-                {/* {r}, {c} */}
-                {/* <br /> */}
-                {/* {color.join(",")} */}
-              </div>
-            );
-          })}
-        </div>
-      ))}
+            })}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

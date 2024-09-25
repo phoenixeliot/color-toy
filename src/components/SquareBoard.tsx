@@ -43,13 +43,7 @@ export default function SquareBoard({
     )
   );
   const [positions, setPositions] = useState(() => {
-    const positions: {
-      goalR: number;
-      goalC: number;
-      currentR: number;
-      currentC: number;
-      // color: RgbColor;
-    }[][] = [];
+    const positions: MovableGridPosition[][] = [];
     solvedGridColors.forEach((row, r) => {
       positions[r] ??= [];
       row.forEach((col, c) => {
@@ -58,53 +52,21 @@ export default function SquareBoard({
           currentC: c,
           goalR: r, // stays the same even if we move items around
           goalC: c,
-          // color: solvedGridColors[r][c],
         };
       });
     });
     return positions;
   });
-  const unshuffleGrid = () => {
-    const posList = solvedGridColors.flat();
-    const unflattened: typeof positions = [];
-    posList.forEach((pos, flatIndex) => {
-      const newR = Math.floor(flatIndex / numCols);
-      const newC = flatIndex % numCols;
-      unflattened[newR] ??= [];
-      unflattened[newR][newC] = {
-        goalR: newR,
-        goalC: newC,
-        currentR: newR,
-        currentC: newC,
-      };
-    });
-    setPositions(unflattened);
-  };
-  const shuffleGrid = () => {
-    const posList = positions.flat();
-    const shuffled = [];
-    while (posList.length > 0) {
-      const index = Math.floor(Math.random() * posList.length);
-      shuffled.push(posList.splice(index, 1)[0]);
-    }
-    const unflattened: typeof positions = [];
-    shuffled.forEach((pos, flatIndex) => {
-      const newR = Math.floor(flatIndex / numCols);
-      const newC = flatIndex % numCols;
-      unflattened[newR] ??= [];
-      unflattened[newR][newC] = {
-        ...pos,
-        currentR: newR,
-        currentC: newC,
-      };
-    });
-    console.log(unflattened);
-    setPositions(unflattened);
-  };
   return (
     <div>
-      <button onClick={unshuffleGrid}>Unshuffle grid</button>
-      <button onClick={shuffleGrid}>Shuffle grid</button>
+      <button
+        onClick={() => setPositions(unshuffleGrid(solvedGridColors, numCols))}
+      >
+        Unshuffle grid
+      </button>
+      <button onClick={() => setPositions(shuffleGrid(positions, numCols))}>
+        Shuffle grid
+      </button>
       <div
         style={{
           display: "flex",
@@ -166,6 +128,51 @@ export default function SquareBoard({
       </div>
     </div>
   );
+}
+
+function unshuffleGrid(solvedGridColors: RgbColor[][], numCols: number) {
+  const posList = solvedGridColors.flat();
+  const unflattened: MovableGridPosition[][] = [];
+  posList.forEach((pos, flatIndex) => {
+    const newR = Math.floor(flatIndex / numCols);
+    const newC = flatIndex % numCols;
+    unflattened[newR] ??= [];
+    unflattened[newR][newC] = {
+      goalR: newR,
+      goalC: newC,
+      currentR: newR,
+      currentC: newC,
+    };
+  });
+  return unflattened;
+}
+
+type MovableGridPosition = {
+  goalR: number;
+  goalC: number;
+  currentR: number;
+  currentC: number;
+};
+
+function shuffleGrid(positions: MovableGridPosition[][], numCols: number) {
+  const posList = positions.flat();
+  const shuffled = [];
+  while (posList.length > 0) {
+    const index = Math.floor(Math.random() * posList.length);
+    shuffled.push(posList.splice(index, 1)[0]);
+  }
+  const unflattened: typeof positions = [];
+  shuffled.forEach((pos, flatIndex) => {
+    const newR = Math.floor(flatIndex / numCols);
+    const newC = flatIndex % numCols;
+    unflattened[newR] ??= [];
+    unflattened[newR][newC] = {
+      ...pos,
+      currentR: newR,
+      currentC: newC,
+    };
+  });
+  return unflattened;
 }
 
 // inverse of distance

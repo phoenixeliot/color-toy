@@ -71,6 +71,7 @@ export default function SquareBoard({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        gap: "5px",
       }}
     >
       <div>
@@ -90,14 +91,42 @@ export default function SquareBoard({
               const color = solvedGridColors[r][c];
               // return <div>{`${r},${c}`}</div>;
               return (
-                <input
-                  className="color-input"
-                  value={rgbToHex(color)}
-                  type="color"
-                  onChange={(e) =>
-                    onChangeReferenceColor({ x: c, y: r }, e.target.value)
-                  }
-                />
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "5px",
+                    flexDirection: c === 0 ? "row" : "row-reverse",
+                  }}
+                >
+                  <button
+                    style={{
+                      border: "none",
+                      backgroundColor: "none",
+                      padding: 0,
+                      fontSize: "20px",
+                    }}
+                    onClick={() =>
+                      onChangeReferenceColor(
+                        { x: c, y: r },
+                        rgbToHex([
+                          Math.floor(Math.random() * 256),
+                          Math.floor(Math.random() * 256),
+                          Math.floor(Math.random() * 256),
+                        ])
+                      )
+                    }
+                  >
+                    🔄
+                  </button>
+                  <input
+                    className="color-input"
+                    value={rgbToHex(color)}
+                    type="color"
+                    onChange={(e) =>
+                      onChangeReferenceColor({ x: c, y: r }, e.target.value)
+                    }
+                  />
+                </div>
               );
             })}
           </div>

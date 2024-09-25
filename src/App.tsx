@@ -18,7 +18,9 @@ function App() {
   });
 
   function setColor(positionName: string, hexColor: string) {
-    console.log(`Updating color for ${positionName}`);
+    // console.log(
+    //   `Updating color for ${positionName} to ${hexColor} (${hexToRgb(hexColor).join(",")})`
+    // );
     setColors({
       ...colors,
       [positionName]: hexToRgb(hexColor),
@@ -81,7 +83,9 @@ function App() {
         width={Math.min((windowSize.width || Infinity) - 80, 500)}
         height={Math.min((windowSize.height || Infinity) - 200, 500)}
         onChangeReferenceColor={(pos, color) => {
-          console.log(`Changing color for position, ${JSON.stringify(pos)}`);
+          // console.log(
+          //   `Changing color for position, ${JSON.stringify(pos)}: ${color}`
+          // );
           switch (pos.x) {
             case 0:
               switch (pos.y) {

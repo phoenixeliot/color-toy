@@ -66,18 +66,26 @@ export default function SquareBoard({
   }
 
   return (
-    <div>
-      <button
-        onClick={() => setPositions(unshuffleGrid(solvedGridColors, numCols))}
-      >
-        Unshuffle grid
-      </button>
-      <button onClick={() => setPositions(shuffleGrid(positions, numCols))}>
-        Shuffle grid
-      </button>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <div>
+        <button
+          onClick={() => setPositions(unshuffleGrid(solvedGridColors, numCols))}
+        >
+          Unshuffle grid
+        </button>
+        <button onClick={() => setPositions(shuffleGrid(positions, numCols))}>
+          Shuffle grid
+        </button>
+      </div>
       <div>
         {[0, numRows - 1].map((r) => (
-          <div style={{ display: "flex", justifyContent: "center" }}>
+          <div style={{ display: "flex" }}>
             {[0, numCols - 1].map((c) => {
               const color = solvedGridColors[r][c];
               // return <div>{`${r},${c}`}</div>;

@@ -79,7 +79,7 @@ function App() {
         numRows={numRows}
         numCols={numCols}
         width={Math.min((windowSize.width || Infinity) - 80, 500)}
-        height={Math.min((windowSize.height || Infinity) - 100, 500)}
+        height={Math.min((windowSize.height || Infinity) - 200, 500)}
         onChangeReferenceColor={(pos, color) => {
           console.log(`Changing color for position, ${JSON.stringify(pos)}`);
           switch (pos.x) {

@@ -27,7 +27,6 @@ function App() {
 
   return (
     <>
-      <div>(Click the corners to change their color)</div>
       <label>
         Rows:
         <input

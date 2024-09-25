@@ -1,6 +1,7 @@
 import { transpose, zip } from "ramda";
 import { useState, type CSSProperties } from "react";
 import { rgbToHex, type Position, type RgbColor } from "../utils/color";
+import "./SquareBoard.css";
 
 type Props = {
   numRows: number;
@@ -67,6 +68,25 @@ export default function SquareBoard({
       <button onClick={() => setPositions(shuffleGrid(positions, numCols))}>
         Shuffle grid
       </button>
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        {[0, numRows - 1].map((r) => (
+          <div>
+            {[0, numCols - 1].map((c) => {
+              const color = solvedGridColors[r][c];
+              return (
+                <input
+                  className="color-input"
+                  value={rgbToHex(color)}
+                  type="color"
+                  onChange={(e) =>
+                    onChangeReferenceColor({ x: c, y: r }, e.target.value)
+                  }
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
       <div
         style={{
           display: "flex",

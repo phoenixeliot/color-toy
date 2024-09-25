@@ -75,11 +75,12 @@ export default function SquareBoard({
       <button onClick={() => setPositions(shuffleGrid(positions, numCols))}>
         Shuffle grid
       </button>
-      <div style={{ display: "flex", justifyContent: "center" }}>
+      <div>
         {[0, numRows - 1].map((r) => (
-          <div>
+          <div style={{ display: "flex", justifyContent: "center" }}>
             {[0, numCols - 1].map((c) => {
               const color = solvedGridColors[r][c];
+              // return <div>{`${r},${c}`}</div>;
               return (
                 <input
                   className="color-input"
